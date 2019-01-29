@@ -30,22 +30,6 @@ function unused()
   end
 end
 
-function refuelIfNecessary()
-  if turtle.getFuelLevel() < 20 then
-    sipCoal()
-  end
-end
-
-function sipCoal()
-  index = findItem("minecraft:coal");
-  if index ~= -1 then
-    turtle.select(index);
-    turtle.refuel(1)
-    return true;
-  end
-  return false;
-end
-
 function findItem(name)
   for i=1,16 do
     item = turtle.getItemDetail(i)
@@ -100,17 +84,6 @@ function mineWaypoints(waypoints)
     end
   end
   return true;
-end
-
-function countItems(name)
-  count = 0;
-  for i=1,16 do
-    item = turtle.getItemDetail(i);
-    if item ~= nil and item.name == name then
-      count = count + item.count;
-    end
-  end
-  return count;
 end
 
 function haveFuelFor(n)
@@ -371,61 +344,7 @@ function gotoZ(tz,ore,tunnel,tick)
   return true;
 end
 
-function getEmptySlots()
-  n = 0;
-  for i=1,16 do
-    if turtle.getItemDetail(i) == nil then
-      n = n + 1;
-    end
-  end
-  return n;
-end
 
-function findInArray(arr,ele)
-  for i,v in ipairs(arr) do
-    if v == ele then
-      return i;
-    end
-  end
-  return -1;
-end
-
-function isWorthless(item)
-  worthless = {
-  "minecraft:stone",
-  "minecraft:cobblestone",
-  "minecraft:sand",
-  "minecraft:dirt",
-  "minecraft:gravel",
-  "minecraft:bedrock",
-  "minecraft:lava",
-  "minecraft:flowing_lava",
-  "minecraft:water",
-  "minecraft:flowing_water",
-  }
-  if item == nil then
-    return true;
-  end;
-  return findInArray(worthless,item.name) ~= -1
-end
-
-function isOre(item)
-  if item == nil then
-    return true;
-  end;
-  return string.find("ore",item.name) or string.find("Ore",item.name);
-end
-
-function dirAdd(mdir,a)
-  newdir = mdir + a;
-  while(newdir < 1) do
-    newdir = newdir + 4;
-  end
-  while(newdir > 4) do
-    newdir = newdir - 4;
-  end
-  return newdir;
-end
 
 function hasChecked(mdir)
   x,y = posInDir(mdir)
@@ -490,50 +409,6 @@ function checkOre()
   end
 end
 
-function consolidateAll()
-  underfilled = {}
-  for i=1,16 do
-    item = turtle.getItemDetail(i)
-    if item ~= nil then
-      uf = underfilled[item.name];
-      if uf ~= nil then
-        turtle.select(i);
-        turtle.transferTo(uf);
-        if turtle.getItemSpace(uf) == 0 then
-          underfilled[item.name] = nil;
-        end
-      end
-      item = turtle.getItemDetail(i);
-      if item ~= nil then
-        spaces = turtle.getItemSpace(i)
-        if spaces > 0 then
-          underfilled[item.name] = i;
-        end
-      end
-    end
-  end
-end
 
-function depositItems()
-  success, item = turtle.inspect()
-  if success == false or item.name ~= "minecraft:chest" then
-    print("no chest found!!")
-    return
-  end
-
-  coalSave = -1;
-  consolidateAll();
-  if countItems("minecraft:coal") > 64 then
-    coalSave = findFullStack("minecraft:coal")
-  end
-
-  for i=1,16 do
-    item = turtle.getItemDetail(i);
-    if item ~= nil and not (item.name == "minecraft:coal" and (coalSave == -1 or coalSave == i)) then
-      turtle.select(i)
-      turtle.drop();
-    end
-  end
-end
 
 main();
