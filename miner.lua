@@ -11,12 +11,7 @@ function Miner:_init()
 
   self.torchSide = "left";
 
-  self.doDig = true;
-  self.placeFloor = true;
-  self.doTunnel = true;
-  self.placeTorches = true;
-  self.digOre = true;
-  self.doInventoryCheck = true;
+  self:doTriggers();
 end
 
 function Miner:noTriggers()
@@ -44,16 +39,30 @@ function Miner:beforeMove()
 end
 
 function Miner:afterMove()
+  self:makeTunnel();
+  self:doPlaceTorches();
+  self:doMineVein();
+  self:doPlaceFloor();
+  self:performInventoryCheck();
+end
+
+function Miner:isValuable(block)
+  return turtleUtil.isOre(block);
+end
+
+function makeTunnel()
   if self.doTunnel and turtle.detectUp() then
     local success,block = turtle.inspectUp();
-    if success and turtleUtil.isOre(block) then
+    if success and self:isValuable(block) then
       self:mineVein(vector.new(self.pos.x,self.pos.y,self.pos.z+1));
     end
     if success and block.name ~= "minecraft:torch" then
       turtle.digUp();
     end
   end
+end
 
+function doPlaceTorches()
   if self.placeTorches and self.pos.x % 5 == 0 and self.pos.y % 5 == 0 then
     self:noTriggers();
 
@@ -74,18 +83,24 @@ function Miner:afterMove()
 
     self:doTriggers();
   end
+end
 
+function doMineVein()
   if self.digOre and turtle.detectDown() then
     local success,block = turtle.inspectDown();
-    if success and turtleUtil.isOre(block) then
+    if success and self:isValuable(block) then
       self:mineVein(vector.new(self.pos.x,self.pos.y,self.pos.z-1));
     end
   end
+end
 
+function doPlaceFloor()
   if self.placeFloor and not turtle.detectDown() then
     turtleUtil.placeBlockDown("minecraft:cobblestone");
   end
+end
 
+function performInventoryCheck()
   if self.doInventoryCheck and turtleUtil.getEmptySlots() < 3 then
     self:noTriggers();
     self.doDig = true;
@@ -165,17 +180,17 @@ function Miner:lookForOre(pos)
   local delta = pos - self.pos;
   if delta.z == 1 then
     u, up = turtle.inspectUp();
-    return u and turtleUtil.isOre(up)
+    return u and self:isValuable(up)
   end
 
   if delta.z == -1 then
     d, down = turtle.inspectDown();
-    return d and turtleUtil.isOre(down)
+    return d and self:isValuable(down)
   end
 
   self:turnToward(pos);
   f, forward = turtle.inspect();
-  return f and turtleUtil.isOre(forward);
+  return f and self:isValuable(forward);
 end
 
 function Miner:searchForOre()

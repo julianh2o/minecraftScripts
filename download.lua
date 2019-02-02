@@ -1,6 +1,8 @@
 --https://pastebin.com/HuSzyVfL
 base = "http://www.julianhartline.com/minecraft";
 
+args = {...}
+
 local res = http.get(base.."/files.txt");
 local fileList = res.readAll();
 
@@ -20,8 +22,14 @@ for f in string.gmatch(fileList, "[^\n]+") do
 end
 
 if (fs.exists("run")) then
-  print("Running run...");
-  shell.run("run");
+  util.clearOutputFile();
+  if args[1] then
+    util.db("Running "..args[1]);
+    shell.run(args[1]);
+  else
+    util.db("Running run");
+    shell.run("run");
+  end
 
   -- Upload output file
   local h = fs.open("out","r");

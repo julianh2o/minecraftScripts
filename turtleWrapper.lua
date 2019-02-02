@@ -6,6 +6,7 @@ Turtle = util.createClass();
 position_file = "_turtlePosition";
 
 function Turtle:_init()
+  util.db("init called from turtle wrapper");
   -- self.pos = util.readJsonFile(position_file) or {x=0,y=0,z=0,dir=1};
   --self.pos = {x=0,y=0,z=0,dir=1};
   --TODO load from file
@@ -43,22 +44,6 @@ function Turtle:turnToward(pos)
   return dist;
 end
 
-function Turtle:go(pos)
-  util.db("# go "..pos:tostring());
-  dist = self:turnToward(pos);
-  self:moveN(dist);
-
-  util.db("go minor "..pos:tostring());
-  dist = self:turnToward(pos);
-  self:moveN(dist);
-
-  util.db("go vertical "..pos:tostring());
-  local delta = pos - self.pos;
-  if math.abs(delta.z) > 0 then
-    self:vmoveN(math.abs(delta.z),delta.z < 0);
-  end
-end
-
 function Turtle:beforeMove()
 end
 
@@ -68,16 +53,13 @@ end
 function Turtle:moveN(dist)
   local failCount = 0;
   while (dist > 0) do
-    util.db("Dist: "..dist);
     if failCount > self.maxMoveFailCount then
       return false;
     end
     self:beforeMove();
     if self:move() then
       dist = dist - 1;
-      util.db("about to aftermove");
       self:afterMove();
-      util.db("done aftermove");
     else
       failCount = failCount + 1;
     end
@@ -103,10 +85,6 @@ function Turtle:vmoveN(dist,down)
 end
 
 function Turtle:move(back)
-  util.db("# move ");
-  if back then
-    util.db("moving back");
-  end
   local success = false;
   local moveDirection = self.dir;
   turtleUtil.refuelIfNecessary();
@@ -119,7 +97,6 @@ function Turtle:move(back)
 
   if success then
     self.pos = turtleUtil.posInDir(self.pos,moveDirection);
-    util.db("updated pos to "..self.pos:tostring());
     util.writeJsonFile(position_file,self.pos);
   else
     util.db("Move failed!");
@@ -129,22 +106,16 @@ function Turtle:move(back)
 end
 
 function Turtle:vmove(down)
-  util.db("# vmove");
-  if down then
-    util.db("moving down");
-  end
   turtleUtil.refuelIfNecessary();
   if down then
     if turtle.down() then
       self.pos.z = self.pos.z - 1;
-      util.db("updated pos to "..self.pos:tostring());
       util.writeJsonFile(position_file,self.pos);
       return true;
     end
   else
     if turtle.up() then
       self.pos.z = self.pos.z + 1;
-      util.db("updated pos to "..self.pos:tostring());
       util.writeJsonFile(position_file,self.pos);
       return true;
     end
