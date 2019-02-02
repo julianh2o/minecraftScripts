@@ -58,7 +58,7 @@ function Miner:afterMove()
     self:noTriggers();
 
     turtle.digUp();
-    self:vmove(1);
+    self:vmove();
     if self.torchSide == "left" then
       self:right();
       turtle.dig();
@@ -68,7 +68,7 @@ function Miner:afterMove()
       turtle.dig();
       self:right();
     end
-    self:vmove(1,true);
+    self:vmove(true);
 
     turtleUtil.placeBlockUp("minecraft:torch");
 

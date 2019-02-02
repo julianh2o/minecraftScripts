@@ -14,6 +14,9 @@ function clearOutputFile()
 end
 
 function db(s)
+  if not s then
+    s = "nil";
+  end
   h = fs.open("out","a");
   h.write(s.."\n");
   h.close();

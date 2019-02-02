@@ -8,22 +8,39 @@ util.db("Remaining Fuel: "..turtle.getFuelLevel());
 
 t = miner.Miner();
 
-local length = 40;
-t:moveN(length);
-t:turnTo(2);
-t:moveN(1);
-t:turnTo(3);
-t:moveN(length);
-t:turnTo(4);
-t:go(vector.new(0,0,0));
-t:turnTo(3);
-t:depositItems();
-t:turnTo(2);
-t:moveN(3);
-t:turnTo(3);
-t:moveN(1);
-t:turnTo(1);
-t:moveN(1);
+
+function mineObsidian()
+  t:noTriggers();
+  go = true
+  while go do
+    turtle.digDown();
+    t:moveN(1);
+
+    local success,block = turtle.inspectDown();
+    util.db(block.name);
+    go = block.name == "minecraft:obsidian";
+  end
+end
+mineObsidian()
+
+function mineStrip()
+  local length = 40;
+  t:moveN(length);
+  t:turnTo(2);
+  t:moveN(1);
+  t:turnTo(3);
+  t:moveN(length);
+  t:turnTo(4);
+  t:go(vector.new(0,0,0));
+  t:turnTo(3);
+  t:depositItems();
+  t:turnTo(2);
+  t:moveN(3);
+  t:turnTo(3);
+  t:moveN(1);
+  t:turnTo(1);
+  t:moveN(1);
+end
 
 function makeSpiral()
   local boxSize = 10;
