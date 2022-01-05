@@ -1,6 +1,9 @@
-os.loadAPI("json")
+
 
 function readJsonFile(f)
+  if (not json) then
+      os.loadAPI("json")
+  end
   if (not fs.exists(f)) then
     return nil;
   end
@@ -13,6 +16,7 @@ function clearOutputFile()
   fs.delete("out");
 end
 
+local lastTime = 0;
 function db(s)
   if not s then
     s = "nil";
@@ -21,9 +25,23 @@ function db(s)
   h.write(s.."\n");
   h.close();
   print(s);
+
+  local now = os.time();
+  if now - lastTime > 5 then
+    local base = "http://www.julianhartline.com/minecraft";
+    local h = fs.open("out","r");
+    local contents = h.readAll();
+    h.close();
+
+    http.post(base.."/up.php",contents);
+    lastTime = now;
+  end
 end
 
 function writeJsonFile(f,o)
+    if (not json) then
+        os.loadAPI("json")
+    end
   fileWriteContents(f,json.encode(o));
 end
 
@@ -85,6 +103,14 @@ function createClass(...)
   end})
   -- return the new class table, that's ready to fill with methods
   return cls
+end
+
+function countTablePairs(t)
+    local count = 0;
+    for k,v in pairs(t) do
+        count = count + 1;
+    end
+    return count;
 end
 
 function table_print (tt, indent, done)

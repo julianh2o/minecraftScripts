@@ -6,7 +6,6 @@ Turtle = util.createClass();
 position_file = "_turtlePosition";
 
 function Turtle:_init()
-  util.db("init called from turtle wrapper");
   -- self.pos = util.readJsonFile(position_file) or {x=0,y=0,z=0,dir=1};
   --self.pos = {x=0,y=0,z=0,dir=1};
   --TODO load from file
@@ -24,7 +23,13 @@ function Turtle:status()
 end
 
 function Turtle:turnToward(pos)
-  local d = pos - self.pos;
+  local dir,dist = self:dirAndDistToward();
+  self:turnTo(dir);
+  return dist;
+end
+
+function Turtle:dirAndDistBetween(a,b)
+  local d = b - a;
   local dir = 1;
 
   if (math.abs(d.x) > math.abs(d.y)) then
@@ -40,26 +45,40 @@ function Turtle:turnToward(pos)
     end
     dist = math.abs(d.y);
   end
-  self:turnTo(dir);
-  return dist;
+  return dir,dist;
 end
 
-function Turtle:beforeMove()
+function Turtle:dirAndDistToward(pos)
+  local dir,dist = self:dirAndDistBetween(self.pos,pos);
+  return dir,dist;
+end
+
+function Turtle:turnToAxis(axis,negative)
+  local mapping = {x={1,3},y={2,4}};
+  if negative then
+    self:turnTo(mapping[axis][2]);
+  else
+    self:turnTo(mapping[axis][1]);
+  end
+end
+
+function Turtle:beforeMove(vertical,reversed)
 end
 
 function Turtle:afterMove()
 end
 
 function Turtle:moveN(dist)
+  util.db(" #moveN "..dist);
   local failCount = 0;
   while (dist > 0) do
     if failCount > self.maxMoveFailCount then
       return false;
     end
-    self:beforeMove();
+    if not self:beforeMove(false,false) then return false end;
     if self:move() then
       dist = dist - 1;
-      self:afterMove();
+      self:afterMove(false,false);
     else
       failCount = failCount + 1;
     end
@@ -68,15 +87,16 @@ function Turtle:moveN(dist)
 end
 
 function Turtle:vmoveN(dist,down)
+  util.db(" #vmoveN "..dist);
   local failCount = 0;
   while (dist > 0) do
     if failCount > self.maxMoveFailCount then
       return false;
     end
-    self:beforeMove();
+    if not self:beforeMove(true,down) then return end;
     if self:vmove(down) then
       dist = dist - 1;
-      self:afterMove();
+      self:afterMove(true,down);
     else
       failCount = failCount + 1;
     end
@@ -97,6 +117,7 @@ function Turtle:move(back)
 
   if success then
     self.pos = turtleUtil.posInDir(self.pos,moveDirection);
+    util.db("Moving to ("..self.pos:tostring()..")");
     util.writeJsonFile(position_file,self.pos);
   else
     util.db("Move failed!");
@@ -110,12 +131,14 @@ function Turtle:vmove(down)
   if down then
     if turtle.down() then
       self.pos.z = self.pos.z - 1;
+      util.db("Moving to ("..self.pos:tostring()..")");
       util.writeJsonFile(position_file,self.pos);
       return true;
     end
   else
     if turtle.up() then
       self.pos.z = self.pos.z + 1;
+      util.db("Moving to ("..self.pos:tostring()..")");
       util.writeJsonFile(position_file,self.pos);
       return true;
     end

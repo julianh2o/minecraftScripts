@@ -1,4 +1,5 @@
---https://pastebin.com/HuSzyVfL
+--JSON: pastebin get 4nRg9CHU json
+--DOWNLOAD: pastebin get 0WwJsLeG download
 base = "http://www.julianhartline.com/minecraft";
 
 args = {...}
@@ -10,7 +11,7 @@ for f in string.gmatch(fileList, "[^\n]+") do
   if string.find(f, ".lua") then
     local name = string.gsub(f, ".lua", "");
     print("Downloading: "..name);
-    res = http.get(base.."/"..f);
+    local res = http.get(base.."/"..f);
     local contents = res.readAll();
     if (fs.exists(name)) then
       fs.delete(name);
@@ -21,20 +22,22 @@ for f in string.gmatch(fileList, "[^\n]+") do
   end
 end
 
-if (fs.exists("run")) then
-  util.clearOutputFile();
-  if args[1] then
-    util.db("Running "..args[1]);
-    shell.run(args[1]);
-  else
-    util.db("Running run");
-    shell.run("run");
-  end
+cmd = args[1]
+if not cmd then
+  cmd = "run";
+end
+
+if (fs.exists(cmd)) then
+  fs.delete("out");
+  print("Running "..cmd);
+  shell.run(cmd,args[2]);
 
   -- Upload output file
-  local h = fs.open("out","r");
-  local contents = h.readAll();
-  h.close();
+  if fs.exists("out") then
+    local h = fs.open("out","r");
+    local contents = h.readAll();
+    h.close();
 
-  http.post(base.."/up.php",contents);
+    http.post(base.."/up.php",contents);
+  end
 end

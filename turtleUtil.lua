@@ -24,8 +24,22 @@ function selectByName(blockName)
   return true;
 end
 
+function selectMatching(s)
+  local index = findMatching(s);
+  if index == -1 then
+    return false
+  end
+
+  turtle.select(index);
+  return true;
+end
+
 function placeBlock(blockName)
   return selectByName(blockName) and turtle.place();
+end
+
+function placeBlockMatching(s)
+  return selectMatching(s) and turtle.place();
 end
 
 function placeBlockUp(blockName)
@@ -39,7 +53,17 @@ end
 function findItem(name)
   for i=1,16 do
     local item = turtle.getItemDetail(i)
-    if item ~= nil and item.name == name then
+    if item ~= nil and (name == nil or item.name == name) then
+      return i;
+    end
+  end
+  return -1;
+end
+
+function findMatching(s)
+  for i=1,16 do
+    local item = turtle.getItemDetail(i)
+    if item ~= nil and (name == nil or string.find(item.name,s)) then
       return i;
     end
   end
@@ -64,6 +88,17 @@ function getEmptySlots()
     end
   end
   return n;
+end
+
+function countItemsMatching(s)
+  count = 0;
+  for i=1,16 do
+    item = turtle.getItemDetail(i);
+    if item ~= nil and string.find(item.name,s) then
+      count = count + item.count;
+    end
+  end
+  return count;
 end
 
 function countItems(name)
@@ -101,30 +136,6 @@ function isOre(item)
     return false;
   end
   return string.find(item.name,"ore") or string.find(item.name,"Ore");
-end
-
-function consolidateInventory()
-  underfilled = {}
-  for i=1,16 do
-    item = turtle.getItemDetail(i)
-    if item ~= nil then
-      uf = underfilled[item.name];
-      if uf ~= nil then
-        turtle.select(i);
-        turtle.transferTo(uf);
-        if turtle.getItemSpace(uf) == 0 then
-          underfilled[item.name] = nil;
-        end
-      end
-      item = turtle.getItemDetail(i);
-      if item ~= nil then
-        spaces = turtle.getItemSpace(i)
-        if spaces > 0 then
-          underfilled[item.name] = i;
-        end
-      end
-    end
-  end
 end
 
 function dirAdd(dir,a)

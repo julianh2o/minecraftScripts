@@ -32,10 +32,11 @@ function Miner:doTriggers()
   self.doInventoryCheck = true;
 end
 
-function Miner:beforeMove()
+function Miner:beforeMove(vertical,reversed)
   if self.doDig and turtle.detect() then
     turtle.dig();
   end
+  return true;
 end
 
 function Miner:afterMove()
@@ -50,7 +51,7 @@ function Miner:isValuable(block)
   return turtleUtil.isOre(block);
 end
 
-function makeTunnel()
+function Miner:makeTunnel()
   if self.doTunnel and turtle.detectUp() then
     local success,block = turtle.inspectUp();
     if success and self:isValuable(block) then
@@ -62,7 +63,7 @@ function makeTunnel()
   end
 end
 
-function doPlaceTorches()
+function Miner:doPlaceTorches()
   if self.placeTorches and self.pos.x % 5 == 0 and self.pos.y % 5 == 0 then
     self:noTriggers();
 
@@ -85,7 +86,7 @@ function doPlaceTorches()
   end
 end
 
-function doMineVein()
+function Miner:doMineVein()
   if self.digOre and turtle.detectDown() then
     local success,block = turtle.inspectDown();
     if success and self:isValuable(block) then
@@ -94,13 +95,7 @@ function doMineVein()
   end
 end
 
-function doPlaceFloor()
-  if self.placeFloor and not turtle.detectDown() then
-    turtleUtil.placeBlockDown("minecraft:cobblestone");
-  end
-end
-
-function performInventoryCheck()
+function Miner:performInventoryCheck()
   if self.doInventoryCheck and turtleUtil.getEmptySlots() < 3 then
     self:noTriggers();
     self.doDig = true;
@@ -243,28 +238,6 @@ function Miner:minePosition(pos)
     util.db(string.rep("   ",self.minerStatus.depth).."Turning toward and mining: "..pos:tostring());
     self:turnToward(pos);
     turtle.dig();
-  end
-end
-
-function Miner:depositItems()
-  success, item = turtle.inspect()
-  if success == false or item.name ~= "minecraft:chest" then
-    util.db("no chest found!!")
-    return
-  end
-
-  coalSave = -1;
-  turtleUtil.consolidateInventory();
-  if turtleUtil.countItems("minecraft:coal") > 64 then
-    coalSave = turtleUtil.findFullStack("minecraft:coal")
-  end
-
-  for i=1,16 do
-    item = turtle.getItemDetail(i);
-    if item ~= nil and not (item.name == "minecraft:coal" and (coalSave == -1 or coalSave == i)) then
-      turtle.select(i)
-      turtle.drop();
-    end
   end
 end
 

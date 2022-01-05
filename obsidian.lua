@@ -11,7 +11,6 @@ function mineObsidian()
     t:moveN(1);
 
     local success,block = turtle.inspectDown();
-    util.db(block.name);
     go = block.name == "minecraft:obsidian";
   end
 end
