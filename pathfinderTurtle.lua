@@ -8,6 +8,16 @@ function Pathfinder:_init()
   self.destination = nil;
   self.strategy = nil;
   self.stalled = false;
+
+  self.home = vector.new(0,0,0)
+end
+
+function Pathfinder:setHome(pos)
+  self.home = pos
+end
+
+function Pathfinder:setDestinationHome(strategy)
+  self:setDestination(self.home,strategy)
 end
 
 function Pathfinder:setDestination(pos,strategy)

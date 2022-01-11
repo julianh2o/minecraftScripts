@@ -14,6 +14,10 @@ function Turtle:_init()
   self.dir = 1;
 end
 
+function Turtle:setPos(pos)
+  self.pos = pos
+end
+
 function Turtle:fuelCheck(num)
   return turtle.getFuelLevel() > num;
 end

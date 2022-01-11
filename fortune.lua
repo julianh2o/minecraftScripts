@@ -96,12 +96,6 @@ function FortuneMiner:afterMove()
   self:doPlaceFloor();
 end
 
-function FortuneMiner:doPlaceFloor()
-  if self.placeFloor and not turtle.detectDown() then
-    turtleUtil.placeBlockDown("minecraft:cobblestone");
-  end
-end
-
 function FortuneMiner:reportDiamonds()
   if self:inspectingDiamond(turtle.inspect) or self:inspectingDiamond(turtle.inspectUp) or self:inspectingDiamond(turtle.inspectDown) then
     util.db("FOUND Diamond ore ("..self.pos:tostring()..")");

@@ -51,6 +51,12 @@ function InventoryManager:isChest(block)
   return false;
 end
 
+function InventoryManager:suckAll()
+  for i=0,turtleUtil.getEmptySlots() do
+    turtle.suck()
+  end
+end
+
 function InventoryManager:depositItems()
   success, block = turtle.inspect()
   if success == false or not self:isChest(block) then

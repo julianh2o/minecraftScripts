@@ -17,8 +17,10 @@ if [ "$1" = "-w" ]; then
         sleep 2
     done
 else
-    # FILES=$(ls | grep -v $S)
-    # echo "$FILES" > files.txt
+    if [[ ! -f files.txt ]] ; then
+        FILES=$(ls | grep -v $S)
+        echo "$FILES" > files.txt
+    fi
 
     scp files.txt `cat files.txt | xargs` julianh2o@julianhartline.com:/home/julianh2o/julianhartline.com/minecraft/
 fi

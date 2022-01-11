@@ -47,6 +47,13 @@ function Miner:afterMove()
   self:performInventoryCheck();
 end
 
+function Miner:doPlaceFloor()
+  if self.placeFloor and not turtle.detectDown() then
+    turtleUtil.placeBlockDown("minecraft:cobblestone");
+  end
+end
+
+
 function Miner:isValuable(block)
   return turtleUtil.isOre(block);
 end

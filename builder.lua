@@ -8,16 +8,20 @@ Builder = util.createClass(pathfinderTurtle.Pathfinder);
 
 function Builder:_init()
   pathfinderTurtle.Pathfinder._init(self);
-  self.offset = vector.new(0,0,0);
+  self.material = "minecraft:cobblestone";
+
+  self.floorFunction = true;
 
   self.inv = inventory.InventoryManager();
-  self.inv:save("minecraft:torch",64);
   self.inv:save("minecraft:coal",64);
 
   self:doTriggers();
 end
 
 function Builder:beforeMove(vertical,reversed)
+  if self.doDig then
+    self:doMoveDig(vertical,reversed);
+  end
   return true;
 end
 
@@ -26,13 +30,19 @@ function Builder:afterMove()
 end
 
 function Builder:noTriggers()
+  self.doDig = false;
   self.doInventoryCheck = false;
   self.placeFloor = false;
 end
 
 function Builder:doTriggers()
+  self.doDig = true;
   self.doInventoryCheck = true;
   self.placeFloor = true;
+end
+
+function Builder:setFloorFunction(f)
+  self.floorFunction = f
 end
 
 function Builder:doDetect(vertical,reversed)
@@ -56,6 +66,7 @@ function Builder:doInspect(vertical,reversed)
 end
 
 function Builder:doMoveDig(vertical,reversed)
+  print("doing move dig")
   if not vertical and not reversed then
     turtle.dig();
   elseif vertical and not reversed then
@@ -71,26 +82,27 @@ function Builder:afterMove()
 end
 
 function Builder:doPlaceFloor()
+  turtle.digDown();
   if self.placeFloor and not turtle.detectDown() then
-    turtleUtil.placeBlockDown("minecraft:cobblestone");
+    if self.floorFunction ~= false and (self.floorFunction == true or self.floorFunction() == true) then
+      turtleUtil.placeBlockDown(self.material);
+    end
   end
 end
 
 function Builder:performInventoryCheck()
-  if self.doInventoryCheck and turtleUtil.getEmptySlots() < 3 then
-    --Fix me
+  if self.doInventoryCheck and turtleUtil.countItems(self.material) == 0 then
     self:noTriggers();
-    self.doDig = true;
 
     local returnTo = vector.new(self.pos.x,self.pos.y,self.pos.z);
     local lastDest = vector.new(self.destination.x,self.destination.y,self.destination.z);
     local strategy = self.strategy;
 
-    self:setDestination(vector.new(0,0,0),"xyz");
+    self:setDestinationHome("xyz");
     self:waitUntilDestination();
 
     self:turnTo(3);
-    self.inv:depositItems();
+    self.inv:suckAll();
     self:turnTo(1);
 
     self:setDestination(returnTo,"zyx");
